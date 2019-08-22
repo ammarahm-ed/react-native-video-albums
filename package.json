@@ -2,6 +2,7 @@
   "name": "react-native-video-albums",
   "version": "1.0.0",
   "description": "A library for getting all the titles of video albums and videos.",
+  "author": "thecodrr <enkaboot@gmail.com>",
   "scripts": {
     "test": "command for testing package"
   },
@@ -14,7 +15,6 @@
     "url": "git+https://github.com/thecodrr/react-native-video-albums"
   },
   "license": "MIT",
-  "author": "",
   "keywords": [
     "react-component",
     "react-native",
