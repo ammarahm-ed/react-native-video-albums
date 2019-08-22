@@ -1,30 +1,24 @@
-import { NativeModules } from 'react-native';
+import { NativeModules } from "react-native";
 
-type imageListOptions = {
-    title: ?boolean,
-    name: ?boolean,
-    size: ?boolean,
-    description: ?boolean,
-    location: ?boolean,
-    date: ?boolean,
-    orientation: ?boolean,
-    type: ?boolean,
-    album: ?boolean,
-    dimensions: ?boolean
-};
-
-type albumListOptions = {
-    count: ?boolean,
-    thumbnail: ?boolean,
-    thumbnailDimensions: ?boolean
+type videoListOptions = {
+  title: ?boolean,
+  name: ?boolean,
+  size: ?boolean,
+  description: ?boolean,
+  location: ?boolean,
+  date: ?boolean,
+  resolution: ?boolean,
+  type: ?boolean,
+  album: ?boolean,
+  dimensions: ?boolean
 };
 
 export default {
-    getImageList(options: imageListOptions = {}) {
-        return NativeModules.RNAlbumsModule.getImageList(options);
-    },
+  getVideoList(options: videoListOptions = {}) {
+    return NativeModules.RNAlbumsModule.getVideoList(options);
+  },
 
-    getAlbumList(options: albumListOptions = {}) {
-        return NativeModules.RNAlbumsModule.getAlbumList(options);
-    }
+  getAlbumList() {
+    return NativeModules.RNAlbumsModule.getAlbumList();
+  }
 };

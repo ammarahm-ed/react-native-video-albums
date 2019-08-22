@@ -1,4 +1,4 @@
-package im.shimo.react.albums;
+package im.thecodrr.react.albums;
 
 import android.database.Cursor;
 import android.provider.MediaStore;
@@ -30,20 +30,20 @@ public class RNAlbumsModule extends ReactContextBaseJavaModule {
 
 
     @ReactMethod
-    public void getImageList(ReadableMap options, Promise promise) {
+    public void getVideoList(ReadableMap options, Promise promise) {
         ArrayList<String> projection = new ArrayList<>();
         ArrayList<ReadableMap> columns = new ArrayList<>();
 
-        setColumn("path", MediaStore.Images.Media.DATA, projection, columns);
+        setColumn("path", MediaStore.Video.Media.DATA, projection, columns);
 
         Map<String, String> fieldMap = new HashMap<>();
-        fieldMap.put("title", MediaStore.Images.Media.TITLE);
-        fieldMap.put("name", MediaStore.Images.Media.DISPLAY_NAME);
-        fieldMap.put("size", MediaStore.Images.Media.SIZE);
-        fieldMap.put("description", MediaStore.Images.Media.DESCRIPTION);
-        fieldMap.put("orientation", MediaStore.Images.Media.ORIENTATION);
-        fieldMap.put("type", MediaStore.Images.Media.MIME_TYPE);
-        fieldMap.put("album", MediaStore.Images.Media.BUCKET_DISPLAY_NAME);
+        fieldMap.put("title", MediaStore.Video.Media.TITLE);
+        fieldMap.put("name", MediaStore.Video.Media.DISPLAY_NAME);
+        fieldMap.put("size", MediaStore.Video.Media.SIZE);
+        fieldMap.put("description", MediaStore.Video.Media.DESCRIPTION);
+        fieldMap.put("resolution", MediaStore.Video.Media.RESOLUTION);
+        fieldMap.put("type", MediaStore.Video.Media.MIME_TYPE);
+        fieldMap.put("album", MediaStore.Video.Media.BUCKET_DISPLAY_NAME);
 
         Iterator<Map.Entry<String, String>> fieldIterator = fieldMap.entrySet().iterator();
 
@@ -58,24 +58,24 @@ public class RNAlbumsModule extends ReactContextBaseJavaModule {
         }
 
         if (shouldSetField(options, "location")) {
-            setColumn("latitude", MediaStore.Images.Media.LATITUDE, projection, columns);
-            setColumn("longitude", MediaStore.Images.Media.LONGITUDE, projection, columns);
+            setColumn("latitude", MediaStore.Video.Media.LATITUDE, projection, columns);
+            setColumn("longitude", MediaStore.Video.Media.LONGITUDE, projection, columns);
         }
 
         if (shouldSetField(options, "date")) {
-            setColumn("added", MediaStore.Images.Media.DATE_ADDED, projection, columns);
-            setColumn("modified", MediaStore.Images.Media.DATE_MODIFIED, projection, columns);
-            setColumn("taken", MediaStore.Images.Media.DATE_TAKEN, projection, columns);
+            setColumn("added", MediaStore.Video.Media.DATE_ADDED, projection, columns);
+            setColumn("modified", MediaStore.Video.Media.DATE_MODIFIED, projection, columns);
+            setColumn("taken", MediaStore.Video.Media.DATE_TAKEN, projection, columns);
         }
 
         if (shouldSetField(options, "dimensions")) {
-            setColumn("width", MediaStore.Images.Media.WIDTH, projection, columns);
-            setColumn("height", MediaStore.Images.Media.HEIGHT, projection, columns);
+            setColumn("width", MediaStore.Video.Media.WIDTH, projection, columns);
+            setColumn("height", MediaStore.Video.Media.HEIGHT, projection, columns);
         }
 
 
         Cursor cursor = getReactApplicationContext().getContentResolver().query(
-                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
                 projection.toArray(new String[projection.size()]),
                 null,
                 null,
@@ -95,14 +95,14 @@ public class RNAlbumsModule extends ReactContextBaseJavaModule {
             do {
                 Iterator<ReadableMap> columnIterator = columns.iterator();
 
-                WritableMap image = Arguments.createMap();
+                WritableMap video = Arguments.createMap();
 
                 while (columnIterator.hasNext()) {
                     ReadableMap column = columnIterator.next();
-                    setWritableMap(image, column.getString("name"), cursor.getString(columnIndexMap.get(column.getString("columnName"))));
+                    setWritableMap(video, column.getString("name"), cursor.getString(columnIndexMap.get(column.getString("columnName"))));
                 }
 
-                list.pushMap(image);
+                list.pushMap(video);
             } while (cursor.moveToNext());
             cursor.close();
         }
@@ -112,21 +112,22 @@ public class RNAlbumsModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void getAlbumList(ReadableMap options, Promise promise) {
-        // which image properties are we querying
+        // which video properties are we querying
         String[] PROJECTION_BUCKET = {
-                MediaStore.Images.ImageColumns.BUCKET_ID,
-                MediaStore.Images.ImageColumns.BUCKET_DISPLAY_NAME,
-                MediaStore.Images.ImageColumns.DATE_TAKEN,
-                MediaStore.Images.ImageColumns.DATA,
-                "count(" +  MediaStore.Images.ImageColumns.BUCKET_ID + ") as count"
+                MediaStore.Video.VideoColumns.BUCKET_ID,
+                MediaStore.Video.VideoColumns.BUCKET_DISPLAY_NAME,
+                MediaStore.Video.VideoColumns.DATE_TAKEN,
+                MediaStore.Video.VideoColumns.DATA,
+                MediaStore.Video.VideoColumns.DISPLAY_NAME,
+                "count(" +  MediaStore.Video.VideoColumns.BUCKET_ID + ") as count"
         };
 
         String BUCKET_GROUP_BY = "1) GROUP BY 1,(2";
-        String BUCKET_ORDER_BY = "MAX(" + MediaStore.Images.ImageColumns.DATE_TAKEN + ") DESC";
+        String BUCKET_ORDER_BY = "MAX(" + MediaStore.Video.VideoColumns.DATE_TAKEN + ") DESC";
 
 
         Cursor cursor = getReactApplicationContext().getContentResolver().query(
-                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
                 PROJECTION_BUCKET,
                 BUCKET_GROUP_BY,
                 null,
@@ -139,12 +140,14 @@ public class RNAlbumsModule extends ReactContextBaseJavaModule {
             String date;
             String data;
             String count;
+            String displayName;
             int bucketColumn = cursor.getColumnIndex(
-                    MediaStore.Images.Media.BUCKET_DISPLAY_NAME);
+                    MediaStore.Video.Media.BUCKET_DISPLAY_NAME);
             int dateColumn = cursor.getColumnIndex(
-                    MediaStore.Images.Media.DATE_TAKEN);
+                    MediaStore.Video.Media.DATE_TAKEN);
             int dataColumn = cursor.getColumnIndex(
-                    MediaStore.Images.Media.DATA);
+                    MediaStore.Video.Media.DATA);
+            int displayNameColumn = cursor.getColumnIndex(MediaStore.Video.Media.DISPLAY_NAME);
             int countColumn = cursor.getColumnIndex("count");
             do {
                 // Get the field values
@@ -152,15 +155,16 @@ public class RNAlbumsModule extends ReactContextBaseJavaModule {
                 date = cursor.getString(dateColumn);
                 data = cursor.getString(dataColumn);
                 count = cursor.getString(countColumn);
+                displayName = cursor.getString(displayNameColumn);
 
+                WritableMap video = Arguments.createMap();
+                setWritableMap(video, "count", count);
+                setWritableMap(video, "date", date);
+                setWritableMap(video, "cover", "file://" + data);
+                setWritableMap(video, "name", bucket);
+                setWritableMap(video, "displayName", displayName);
 
-                WritableMap image = Arguments.createMap();
-                setWritableMap(image, "count", count);
-                setWritableMap(image, "date", date);
-                setWritableMap(image, "cover", "file://" + data);
-                setWritableMap(image, "name", bucket);
-
-                list.pushMap(image);
+                list.pushMap(video);
             } while (cursor.moveToNext());
 
             cursor.close();

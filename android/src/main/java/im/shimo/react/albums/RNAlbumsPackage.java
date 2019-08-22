@@ -1,4 +1,4 @@
-package im.shimo.react.albums;
+package im.thecodrr.react.albums;
 
 import com.facebook.react.ReactPackage;
 import com.facebook.react.bridge.JavaScriptModule;

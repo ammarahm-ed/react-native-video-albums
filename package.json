@@ -1,7 +1,7 @@
 {
-  "name": "react-native-album-list",
-  "version": "0.1.2",
-  "description": "A library for getting all the titles of photo albums and photos",
+  "name": "react-native-video-albums",
+  "version": "1.0.0",
+  "description": "A library for getting all the titles of video albums and videos.",
   "scripts": {
     "test": "command for testing package"
   },

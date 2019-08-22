@@ -1,13 +1,13 @@
 # React Native Album List
 
-A library for getting all the titles of photo albums and photos.
-This library was taken https://github.com/shimohq/react-native-albums and modified for further work.
+A library for getting all the titles of video albums and videos.
+This library was taken https://github.com/aspidvip/react-native-album-list and modified for further work.
 
 # Installation
 
 Install the package from npm:
 
-`yarn add --save react-native-album-list` or `npm i --save react-native-album-list`
+`yarn add --save react-native-video-albums` or `npm i --save react-native-video-albums`
 
 and
 
@@ -15,44 +15,32 @@ and
 
 # Example
 
-`import AlbumsList from 'react-native-album-list'`
+`import AlbumsList from 'react-native-video-albums'`
 
-Get a list of albums
+Get a list of video albums
 
 ```js
-AlbumsList.getAlbumList({
-  count: true,
-  thumbnail: false,
-  thumbnailDimensions: false
-}).then(list => console.log(list));
+AlbumsList.getAlbumList().then(list => console.log(list));
 ```
 
-### getAlbumList options
-
-| Attribute             | Values             |
-| --------------------- | ------------------ |
-| `count`               | `'true'`/`'false'` |
-| `thumbnail`           | `'true'`/`'false'` |
-| `thumbnailDimensions` | `'true'`/`'false'` |
-
-Get a list of photos
+Get a list of videos
 
 ```js
-AlbumsList.getImageList({
+AlbumsList.getVideoList({
   title: true,
   name: false,
   size: true,
   description: true,
   location: false,
   date: true,
-  orientation: true,
+  resolution: true,
   type: false,
   album: true,
   dimensions: false
 }).then(list => console.log(list));
 ```
 
-### imageListOptions options
+### videoListOptions options
 
 | Attribute     | Values             |
 | ------------- | ------------------ |
@@ -62,7 +50,7 @@ AlbumsList.getImageList({
 | `description` | `'true'`/`'false'` |
 | `location`    | `'true'`/`'false'` |
 | `date`        | `'true'`/`'false'` |
-| `orientation` | `'true'`/`'false'` |
+| `resolution`  | `'true'`/`'false'` |
 | `type`        | `'true'`/`'false'` |
 | `album`       | `'true'`/`'false'` |
 | `dimensions`  | `'true'`/`'false'` |
