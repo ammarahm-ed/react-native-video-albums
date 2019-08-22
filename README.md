@@ -34,10 +34,31 @@ AlbumsList.getVideoList({
   location: false,
   date: true,
   resolution: true,
+  duration: true,
   type: false,
   album: true,
-  dimensions: false
+  dimensions: false,
+  timestamp: true
 }).then(list => console.log(list));
+```
+
+Get a list of videos by album
+
+```js
+AlbumsList.getVideosByAlbum({
+  title: true,
+  name: false,
+  size: true,
+  description: true,
+  location: false,
+  date: true,
+  resolution: true,
+  duration: true,
+  type: false,
+  album: true,
+  dimensions: false,
+  timestamp: true
+}, albumName: String).then(list => console.log(list));
 ```
 
 ### videoListOptions options
@@ -54,3 +75,5 @@ AlbumsList.getVideoList({
 | `type`        | `'true'`/`'false'` |
 | `album`       | `'true'`/`'false'` |
 | `dimensions`  | `'true'`/`'false'` |
+| `duration`    | `'true'`/`'false'` |
+| `timestamp`   | `'true'`/`'false'` |
