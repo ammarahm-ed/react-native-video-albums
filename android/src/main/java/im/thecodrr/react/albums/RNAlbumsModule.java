@@ -74,9 +74,10 @@ public class RNAlbumsModule extends ReactContextBaseJavaModule {
             setColumn("height", MediaStore.Video.Media.HEIGHT, projection, columns);
         }
         String selection = null;
-        String orderBy = MediaStore.Video.Media.DATE_ADDED;
+        String orderBy = null;
         if(TextUtils.isEmpty(albumName)) {
             selection = "bucket_display_name = \"" + albumName + "\"";
+            orderBy = MediaStore.Video.Media.DATE_ADDED + " DESC";
             //String columnName = "count(" +  MediaStore.Video.VideoColumns.BUCKET_ID + ") as count";
             //setColumn("count", columnName, projection, columns);
         }
@@ -85,7 +86,7 @@ public class RNAlbumsModule extends ReactContextBaseJavaModule {
                 projection.toArray(new String[projection.size()]),
                 selection,
                 null,
-                orderBy + "DESC"
+                orderBy
         );
 
 
