@@ -111,7 +111,7 @@ public class RNAlbumsModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void getAlbumList(ReadableMap options, Promise promise) {
+    public void getAlbumList(Promise promise) {
         // which video properties are we querying
         String[] PROJECTION_BUCKET = {
                 MediaStore.Video.VideoColumns.BUCKET_ID,
