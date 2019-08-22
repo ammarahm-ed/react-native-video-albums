@@ -1,6 +1,6 @@
 {
   "name": "react-native-video-albums",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "A library for getting all the titles of video albums and videos.",
   "author": "thecodrr <enkaboot@gmail.com>",
   "scripts": {
