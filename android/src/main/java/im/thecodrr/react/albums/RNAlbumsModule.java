@@ -2,6 +2,7 @@ package im.thecodrr.react.albums;
 
 import android.database.Cursor;
 import android.provider.MediaStore;
+import android.text.TextUtils;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Promise;
@@ -17,6 +18,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import javax.annotation.Nullable;
+
 public class RNAlbumsModule extends ReactContextBaseJavaModule {
 
     public RNAlbumsModule(ReactApplicationContext reactContext) {
@@ -28,9 +31,7 @@ public class RNAlbumsModule extends ReactContextBaseJavaModule {
         return "RNAlbumsModule";
     }
 
-
-    @ReactMethod
-    public void getVideoList(ReadableMap options, Promise promise) {
+    private void getVideos(ReadableMap options, Promise promise, @Nullable String albumName){
         ArrayList<String> projection = new ArrayList<>();
         ArrayList<ReadableMap> columns = new ArrayList<>();
 
@@ -44,6 +45,7 @@ public class RNAlbumsModule extends ReactContextBaseJavaModule {
         fieldMap.put("resolution", MediaStore.Video.Media.RESOLUTION);
         fieldMap.put("type", MediaStore.Video.Media.MIME_TYPE);
         fieldMap.put("album", MediaStore.Video.Media.BUCKET_DISPLAY_NAME);
+        fieldMap.put("duration", MediaStore.Video.Media.DURATION);
 
         Iterator<Map.Entry<String, String>> fieldIterator = fieldMap.entrySet().iterator();
 
@@ -56,14 +58,13 @@ public class RNAlbumsModule extends ReactContextBaseJavaModule {
 
             fieldIterator.remove();
         }
-
+        setColumn("timestamp", MediaStore.Video.Media.DATE_ADDED, projection, columns);
         if (shouldSetField(options, "location")) {
             setColumn("latitude", MediaStore.Video.Media.LATITUDE, projection, columns);
             setColumn("longitude", MediaStore.Video.Media.LONGITUDE, projection, columns);
         }
 
         if (shouldSetField(options, "date")) {
-            setColumn("added", MediaStore.Video.Media.DATE_ADDED, projection, columns);
             setColumn("modified", MediaStore.Video.Media.DATE_MODIFIED, projection, columns);
             setColumn("taken", MediaStore.Video.Media.DATE_TAKEN, projection, columns);
         }
@@ -72,14 +73,19 @@ public class RNAlbumsModule extends ReactContextBaseJavaModule {
             setColumn("width", MediaStore.Video.Media.WIDTH, projection, columns);
             setColumn("height", MediaStore.Video.Media.HEIGHT, projection, columns);
         }
-
-
+        String selection = null;
+        String orderBy = MediaStore.Video.Media.DATE_ADDED;
+        if(TextUtils.isEmpty(albumName)) {
+            selection = "bucket_display_name = \"" + albumName + "\"";
+            //String columnName = "count(" +  MediaStore.Video.VideoColumns.BUCKET_ID + ") as count";
+            //setColumn("count", columnName, projection, columns);
+        }
         Cursor cursor = getReactApplicationContext().getContentResolver().query(
                 MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
                 projection.toArray(new String[projection.size()]),
+                selection,
                 null,
-                null,
-                null
+                orderBy + "DESC"
         );
 
 
@@ -108,6 +114,16 @@ public class RNAlbumsModule extends ReactContextBaseJavaModule {
         }
 
         promise.resolve(list);
+    }
+
+    @ReactMethod
+    public void getVideoList(ReadableMap options, Promise promise) {
+        getVideos(options, promise, null);
+    }
+
+    @ReactMethod
+    public void getVideosByAlbum(ReadableMap options, String albumName, Promise promise){
+        getVideos(options, promise, albumName);
     }
 
     @ReactMethod

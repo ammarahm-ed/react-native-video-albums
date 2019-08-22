@@ -18,6 +18,10 @@ export default {
     return NativeModules.RNAlbumsModule.getVideoList(options);
   },
 
+  getVideosByAlbum(options: videoListOptions = {}, albumName) {
+    return NativeModules.RNAlbumsModule.getVideosByAlbum(options, albumName);
+  },
+
   getAlbumList() {
     return NativeModules.RNAlbumsModule.getAlbumList();
   }
