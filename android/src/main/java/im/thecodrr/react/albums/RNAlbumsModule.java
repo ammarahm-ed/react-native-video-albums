@@ -75,7 +75,7 @@ public class RNAlbumsModule extends ReactContextBaseJavaModule {
         }
         String selection = null;
         String orderBy = null;
-        if(TextUtils.isEmpty(albumName)) {
+        if(albumName != null && !TextUtils.isEmpty(albumName)) {
             selection = "bucket_display_name = \"" + albumName + "\"";
             orderBy = MediaStore.Video.Media.DATE_ADDED + " DESC";
             //String columnName = "count(" +  MediaStore.Video.VideoColumns.BUCKET_ID + ") as count";
