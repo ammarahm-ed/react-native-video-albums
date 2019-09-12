@@ -1,4 +1,4 @@
-# React Native Album List
+# React Native Video Albums
 
 A library for getting all the titles of video albums and videos.
 This library was taken https://github.com/aspidvip/react-native-album-list and modified for further work.
