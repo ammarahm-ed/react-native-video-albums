@@ -24,5 +24,9 @@ export default {
 
   getAlbumList() {
     return NativeModules.RNAlbumsModule.getAlbumList();
+  },
+  deleteVideoFromMediastore(path, callback) {
+    return NativeModules.RNAlbumsModule.deleteVideoFromMediastore(path, callback);
   }
+
 };

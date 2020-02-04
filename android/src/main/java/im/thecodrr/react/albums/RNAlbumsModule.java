@@ -1,10 +1,13 @@
 package im.thecodrr.react.albums;
 
 import android.database.Cursor;
+import android.media.MediaScannerConnection;
 import android.provider.MediaStore;
+import android.telecom.Call;
 import android.text.TextUtils;
-
+import android.content.ContentUris;
 import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
@@ -12,7 +15,12 @@ import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
+import android.net.Uri;
+import android.util.Log;
 
+import androidx.core.content.FileProvider;
+
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -31,11 +39,11 @@ public class RNAlbumsModule extends ReactContextBaseJavaModule {
         return "RNAlbumsModule";
     }
 
-    private void getVideos(ReadableMap options, Promise promise, @Nullable String albumName){
+    private void getVideos(ReadableMap options, Promise promise, @Nullable String albumName) {
         ArrayList<String> projection = new ArrayList<>();
         ArrayList<ReadableMap> columns = new ArrayList<>();
 
-        setColumn("path", MediaStore.Video.Media.DATA, projection, columns);
+        setColumn("videoURL", MediaStore.Video.Media.DATA, projection, columns);
 
         Map<String, String> fieldMap = new HashMap<>();
         fieldMap.put("title", MediaStore.Video.Media.TITLE);
@@ -44,7 +52,7 @@ public class RNAlbumsModule extends ReactContextBaseJavaModule {
         fieldMap.put("description", MediaStore.Video.Media.DESCRIPTION);
         fieldMap.put("resolution", MediaStore.Video.Media.RESOLUTION);
         fieldMap.put("type", MediaStore.Video.Media.MIME_TYPE);
-        fieldMap.put("album", MediaStore.Video.Media.BUCKET_DISPLAY_NAME);
+        fieldMap.put("folder", MediaStore.Video.Media.BUCKET_DISPLAY_NAME);
         fieldMap.put("duration", MediaStore.Video.Media.DURATION);
 
         Iterator<Map.Entry<String, String>> fieldIterator = fieldMap.entrySet().iterator();
@@ -75,20 +83,16 @@ public class RNAlbumsModule extends ReactContextBaseJavaModule {
         }
         String selection = null;
         String orderBy = null;
-        if(albumName != null && !TextUtils.isEmpty(albumName)) {
+        if (albumName != null && !TextUtils.isEmpty(albumName)) {
             selection = "bucket_display_name = \"" + albumName + "\"";
             orderBy = MediaStore.Video.Media.DATE_ADDED + " DESC";
-            //String columnName = "count(" +  MediaStore.Video.VideoColumns.BUCKET_ID + ") as count";
-            //setColumn("count", columnName, projection, columns);
+            // String columnName = "count(" + MediaStore.Video.VideoColumns.BUCKET_ID + ")
+            // as count";
+            // setColumn("count", columnName, projection, columns);
         }
         Cursor cursor = getReactApplicationContext().getContentResolver().query(
-                MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
-                projection.toArray(new String[projection.size()]),
-                selection,
-                null,
-                orderBy
-        );
-
+                MediaStore.Video.Media.EXTERNAL_CONTENT_URI, projection.toArray(new String[projection.size()]),
+                selection, null, orderBy);
 
         Map<String, Integer> columnIndexMap = new HashMap<>();
         WritableArray list = Arguments.createArray();
@@ -106,7 +110,8 @@ public class RNAlbumsModule extends ReactContextBaseJavaModule {
 
                 while (columnIterator.hasNext()) {
                     ReadableMap column = columnIterator.next();
-                    setWritableMap(video, column.getString("name"), cursor.getString(columnIndexMap.get(column.getString("columnName"))));
+                    setWritableMap(video, column.getString("name"),
+                            cursor.getString(columnIndexMap.get(column.getString("columnName"))));
                 }
 
                 list.pushMap(video);
@@ -123,33 +128,66 @@ public class RNAlbumsModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void getVideosByAlbum(ReadableMap options, String albumName, Promise promise){
+    public void getVideosByAlbum(ReadableMap options, String albumName, Promise promise) {
         getVideos(options, promise, albumName);
     }
+
+
+    @ReactMethod
+    public void deleteVideoFromMediastore(String filePath, Callback callback) {
+        
+        Uri mediaStoreUri = getUriFromPath(filePath, callback);
+
+
+
+
+    }
+
+
+
+
+    private Uri getUriFromPath(String filePath, final Callback callback) {
+
+
+
+        Log.d("AAA","Loading file " + filePath);
+
+        File file = new File(filePath.replaceFirst("file://",""));
+
+        MediaScannerConnection.scanFile(getReactApplicationContext(),
+                new String[] { file.getAbsolutePath() }, null,
+                new MediaScannerConnection.OnScanCompletedListener() {
+                    public void onScanCompleted(String path, Uri uri) {
+                        Log.i("onScanCompleted", uri.toString());
+
+                        getReactApplicationContext().getContentResolver().delete(uri, null, null);
+                        callback.invoke();
+                    }
+                });
+
+
+
+        return null;
+    }
+
+
+
+
+
 
     @ReactMethod
     public void getAlbumList(Promise promise) {
         // which video properties are we querying
-        String[] PROJECTION_BUCKET = {
-                MediaStore.Video.VideoColumns.BUCKET_ID,
-                MediaStore.Video.VideoColumns.BUCKET_DISPLAY_NAME,
-                MediaStore.Video.VideoColumns.DATE_TAKEN,
-                MediaStore.Video.VideoColumns.DATA,
-                MediaStore.Video.VideoColumns.DISPLAY_NAME,
-                "count(" +  MediaStore.Video.VideoColumns.BUCKET_ID + ") as count"
-        };
+        String[] PROJECTION_BUCKET = { MediaStore.Video.VideoColumns.BUCKET_ID,
+                MediaStore.Video.VideoColumns.BUCKET_DISPLAY_NAME, MediaStore.Video.VideoColumns.DATE_TAKEN,
+                MediaStore.Video.VideoColumns.DATA, MediaStore.Video.VideoColumns.DISPLAY_NAME,
+                "count(" + MediaStore.Video.VideoColumns.BUCKET_ID + ") as count" };
 
         String BUCKET_GROUP_BY = "1) GROUP BY 1,(2";
         String BUCKET_ORDER_BY = "MAX(" + MediaStore.Video.VideoColumns.DATE_TAKEN + ") DESC";
 
-
         Cursor cursor = getReactApplicationContext().getContentResolver().query(
-                MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
-                PROJECTION_BUCKET,
-                BUCKET_GROUP_BY,
-                null,
-                BUCKET_ORDER_BY
-        );
+                MediaStore.Video.Media.EXTERNAL_CONTENT_URI, PROJECTION_BUCKET, BUCKET_GROUP_BY, null, BUCKET_ORDER_BY);
 
         WritableArray list = Arguments.createArray();
         if (cursor != null && cursor.moveToFirst()) {
@@ -158,12 +196,9 @@ public class RNAlbumsModule extends ReactContextBaseJavaModule {
             String data;
             String count;
             String displayName;
-            int bucketColumn = cursor.getColumnIndex(
-                    MediaStore.Video.Media.BUCKET_DISPLAY_NAME);
-            int dateColumn = cursor.getColumnIndex(
-                    MediaStore.Video.Media.DATE_TAKEN);
-            int dataColumn = cursor.getColumnIndex(
-                    MediaStore.Video.Media.DATA);
+            int bucketColumn = cursor.getColumnIndex(MediaStore.Video.Media.BUCKET_DISPLAY_NAME);
+            int dateColumn = cursor.getColumnIndex(MediaStore.Video.Media.DATE_TAKEN);
+            int dataColumn = cursor.getColumnIndex(MediaStore.Video.Media.DATA);
             int displayNameColumn = cursor.getColumnIndex(MediaStore.Video.Media.DISPLAY_NAME);
             int countColumn = cursor.getColumnIndex("count");
             do {
@@ -198,11 +233,18 @@ public class RNAlbumsModule extends ReactContextBaseJavaModule {
         if (value == null) {
             map.putNull(key);
         } else {
-            map.putString(key, value);
+            if (key.equalsIgnoreCase("videoURL")) {
+                value = "file://" + value;
+                map.putString(key, value);
+            } else {
+                map.putString(key, value);
+            }
+
         }
     }
 
-    private void setColumn(String name, String columnName, ArrayList<String> projection, ArrayList<ReadableMap> columns) {
+    private void setColumn(String name, String columnName, ArrayList<String> projection,
+            ArrayList<ReadableMap> columns) {
         projection.add(columnName);
         WritableMap column = Arguments.createMap();
         column.putString("name", name);
